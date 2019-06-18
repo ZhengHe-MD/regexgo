@@ -1,4 +1,4 @@
-package regex_explained
+package regexgo
 
 const (
 	// concatenation operator

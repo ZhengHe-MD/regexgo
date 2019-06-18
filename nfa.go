@@ -1,4 +1,4 @@
-package regex_explained
+package regexgo
 
 // Thompson NFA Construction and Search
 

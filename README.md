@@ -7,23 +7,24 @@ This is a rewrite of [regexjs](https://github.com/deniskyashif/regexjs). Check o
 ## Install
 
 ```sh
-$ go get github.com/ZhengHe-MD/regexgo.git
+$ go get github.com/ZhengHe-MD/regexgo
 ```
 
 ## Usage
 
 ```go
+package main
+
 import (
 	"fmt"
-    "github.com/ZhengHe-MD/regexgo"
-) 
+	. "github.com/ZhengHe-MD/regexgo"
+)
 
 func main() {
 	r := Compile("(a|b)*c")
-	
 	cases := []string{"ac", "abc", "aabababbc", "aaab"}
 	for _, c := range cases {
-	    fmt.Printf("match %s %v\n", c, MatchString(r, c))	
+		fmt.Printf("match %s %v\n", c, MatchString(r, c, &MatchOptions{DFS}))
 	}
 }
 ```
