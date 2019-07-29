@@ -1,4 +1,4 @@
-# Regexgo
+# Regexgo [![CircleCI](https://circleci.com/gh/ZhengHe-MD/regexgo.svg?style=svg)](https://circleci.com/gh/ZhengHe-MD/regexgo)
 
 A simple regular expression engine implemented in Go. It supports concatenation, union (|) and closure (*) operations as well as grouping. It follows Ken Thompson's algorithm for constructing an NFA from a regular expression.
 
