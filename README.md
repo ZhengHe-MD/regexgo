@@ -32,7 +32,7 @@ func main() {
 ## References
 
 * [Implementing a Regular Expression Engine](https://deniskyashif.com/implementing-a-regular-expression-engine/)
-* [Udacity: CS212 WEEK3](https://sites.google.com/site/udacitymirrorcs212/syllabus)
+* [Udacity: CS212 Week3](https://sites.google.com/site/udacitymirrorcs212/syllabus)
 
 
 
