@@ -5,8 +5,8 @@ const (
 	CC = '.'
 
 	// operators
-	OR = '|'
+	OR   = '|'
 	STAR = '*'
-	LP = '('
-	RP = ')'
+	LP   = '('
+	RP   = ')'
 )

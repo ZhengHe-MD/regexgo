@@ -5,11 +5,11 @@ import (
 )
 
 func TestMatchString(t *testing.T) {
-	cases := []struct{
-		exp string
-		words []string
+	cases := []struct {
+		exp          string
+		words        []string
 		expectedRets []bool
-	} {
+	}{
 		{
 			"(a|b)*c",
 			[]string{"ac", "abc", "aabababbc", "aaaab"},
@@ -23,7 +23,7 @@ func TestMatchString(t *testing.T) {
 		{
 			"a*b",
 			[]string{"b", "ab", "aab", "aba", "aaaaaaab"},
-				[]bool{true, true, true, false, true},
+			[]bool{true, true, true, false, true},
 		},
 		{
 			"a*|b*",
