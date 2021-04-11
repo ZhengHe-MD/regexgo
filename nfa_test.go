@@ -49,11 +49,6 @@ func TestMatchString(t *testing.T) {
 			givenWords: []string{"a", "b", "ab", "bb"},
 			wantRets:   []bool{true, true, false, false},
 		},
-		"mixed case 1": {
-			givenExp:   "(a|b)*c",
-			givenWords: []string{"ac", "abc", "aabababbc", "aaaab"},
-			wantRets:   []bool{true, true, true, false},
-		},
 		"regex for all binary numbers divisible by 3": {
 			givenExp:   "(0|(1(01*(00)*0)*1)*)*",
 			givenWords: []string{"", "0", "00", "01", "10", "11", "000", "011", "110", "0000", "0011"},
@@ -63,6 +58,16 @@ func TestMatchString(t *testing.T) {
 			givenExp:   "a?a?a?a?a?a?a?a?a?a?aaaaaaaaaa",
 			givenWords: []string{"aaaaaaaaaa"},
 			wantRets:   []bool{true},
+		},
+		"mixed case 1": {
+			givenExp:   "(a|b)*c",
+			givenWords: []string{"ac", "abc", "aabababbc", "aaaab"},
+			wantRets:   []bool{true, true, true, false},
+		},
+		"mixed case 2": {
+			givenExp:   "(a+b?)*(c|d)",
+			givenWords: []string{"bcd", "aaababaaaabd", "abaabbd"},
+			wantRets:   []bool{false, true, false},
 		},
 	}
 
