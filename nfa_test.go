@@ -1,47 +1,64 @@
 package regexgo
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMatchString(t *testing.T) {
-	cases := []struct {
-		exp          string
-		words        []string
-		expectedRets []bool
+	tests := map[string]struct {
+		givenExp   string
+		givenWords []string
+		wantRets   []bool
 	}{
-		{
-			"(a|b)*c",
-			[]string{"ac", "abc", "aabababbc", "aaaab"},
-			[]bool{true, true, true, false},
+		"empty string": {
+			givenExp:   "",
+			givenWords: []string{"", "a", "ab", "abc"},
+			wantRets:   []bool{true, false, false, false},
 		},
-		{
-			"ab",
-			[]string{"a", "b", "ab", "abc"},
-			[]bool{false, false, true, false},
+		"single char": {
+			givenExp:   "a",
+			givenWords: []string{"bcd", "a", "", "xkcd", "abc", "aaa"},
+			wantRets:   []bool{false, true, false, false, false, false},
 		},
-		{
-			"a*b",
-			[]string{"b", "ab", "aab", "aba", "aaaaaaab"},
-			[]bool{true, true, true, false, true},
+		"closure": {
+			givenExp:   "a*",
+			givenWords: []string{"", "a", "aa", "aaa", "aaaa", "b"},
+			wantRets:   []bool{true, true, true, true, true, false},
 		},
-		{
-			"a*|b*",
-			[]string{"a", "b", "aaaa", "bbbb", "abab", "aaabbb"},
-			[]bool{true, true, true, true, false, false},
+		"concatenation of two chars": {
+			givenExp:   "ab",
+			givenWords: []string{"a", "b", "ab", "abc"},
+			wantRets:   []bool{false, false, true, false},
+		},
+		"union of two chars": {
+			givenExp:   "a|b",
+			givenWords: []string{"a", "b", "ab", "bb"},
+			wantRets:   []bool{true, true, false, false},
+		},
+		"mixed case 1": {
+			givenExp:   "(a|b)*c",
+			givenWords: []string{"ac", "abc", "aabababbc", "aaaab"},
+			wantRets:   []bool{true, true, true, false},
+		},
+		"regex for all binary numbers divisible by 3": {
+			givenExp:   "(0|(1(01*(00)*0)*1)*)*",
+			givenWords: []string{"", "0", "00", "01", "10", "11", "000", "011", "110", "0000", "0011"},
+			wantRets:   []bool{true, true, true, false, false, true, true, true, true, true, true},
 		},
 	}
 
-	for i, c := range cases {
-		n := Compile(c.exp)
-		for j := 0; j < len(c.words); j++ {
-			if MatchString(n, c.words[j], &MatchOptions{DFS}) != c.expectedRets[j] {
-				t.Errorf("Test:%d regexp:%s word:%s method:%s ret:%v", i, c.exp, c.words[j], "DFS", c.expectedRets[j])
+	for name, tc := range tests {
+		n := Compile(tc.givenExp)
+		t.Run(name, func(t *testing.T) {
+			for i := 0; i < len(tc.givenWords); i++ {
+				assert.Equal(t, tc.wantRets[i], MatchString(n, tc.givenWords[i], &MatchOptions{DFS}),
+					fmt.Sprintf("exp: %s word: %s want: %v\n", tc.givenExp, tc.givenWords[i], tc.wantRets[i]))
+				assert.Equal(t, tc.wantRets[i], MatchString(n, tc.givenWords[i], &MatchOptions{BFS}),
+					fmt.Sprintf("exp: %s word: %s want: %v\n", tc.givenExp, tc.givenWords[i], tc.wantRets[i]))
 			}
-
-			if MatchString(n, c.words[j], &MatchOptions{BFS}) != c.expectedRets[j] {
-				t.Errorf("Test:%d regexp:%s word:%s method:%s ret:%v", i, c.exp, c.words[j], "BFS", c.expectedRets[j])
-			}
-		}
+		})
 	}
 }
