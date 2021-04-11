@@ -2,6 +2,7 @@ package regexgo
 
 import (
 	"bytes"
+	"regex-explained/token"
 )
 
 func insertExplicitConcatOperator(exp string) string {
@@ -12,18 +13,22 @@ func insertExplicitConcatOperator(exp string) string {
 
 		bs.WriteByte(tok)
 
-		if tok == LP || tok == OR {
+		if tok == token.LP || tok == token.OR {
 			continue
 		}
 
 		if i < len(exp)-1 {
 			next := exp[i+1]
 
-			if next == OR || next == RP || next == STAR || next == QM {
+			if next == token.OR ||
+				next == token.RP ||
+				next == token.ZeroOrMore ||
+				next == token.ZeroOrOne ||
+				next == token.OneOrMore {
 				continue
 			}
 
-			bs.WriteByte(CC)
+			bs.WriteByte(token.CC)
 		}
 	}
 
@@ -33,10 +38,11 @@ func insertExplicitConcatOperator(exp string) string {
 // NOTE: The operator precedence, from weakest to strongest binding, is
 // alternation -> concatenation -> repetition
 var precedence = map[byte]int{
-	OR:   0,
-	CC:   1,
-	STAR: 2,
-	QM:   3,
+	token.OR:         0,
+	token.CC:         1,
+	token.ZeroOrMore: 2,
+	token.ZeroOrOne:  3,
+	token.OneOrMore:  4,
 }
 
 func toPostfix(exp string) string {
@@ -54,7 +60,7 @@ func toPostfix(exp string) string {
 	}
 
 	takePrecedence := func(tok byte) {
-		for len(st) > 0 && peekStack() != LP && precedence[peekStack()] >= precedence[tok] {
+		for len(st) > 0 && peekStack() != token.LP && precedence[peekStack()] >= precedence[tok] {
 			bs.WriteByte(popStack())
 		}
 		st = append(st, tok)
@@ -64,18 +70,20 @@ func toPostfix(exp string) string {
 		tok := exp[i]
 
 		switch tok {
-		case CC:
+		case token.CC:
 			takePrecedence(tok)
-		case OR:
+		case token.OR:
 			takePrecedence(tok)
-		case STAR:
+		case token.ZeroOrMore:
 			takePrecedence(tok)
-		case QM:
+		case token.ZeroOrOne:
 			takePrecedence(tok)
-		case LP:
+		case token.OneOrMore:
+			takePrecedence(tok)
+		case token.LP:
 			st = append(st, tok)
-		case RP:
-			for len(st) > 0 && peekStack() != LP {
+		case token.RP:
+			for len(st) > 0 && peekStack() != token.LP {
 				bs.WriteByte(popStack())
 			}
 			popStack()

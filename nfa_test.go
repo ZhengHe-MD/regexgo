@@ -29,10 +29,15 @@ func TestMatchString(t *testing.T) {
 			givenWords: []string{"", "a", "aa", "aaa", "aaaa", "b"},
 			wantRets:   []bool{true, true, true, true, true, false},
 		},
-		"question mark": {
+		"zeroOrOne": {
 			givenExp:   "a?",
 			givenWords: []string{"", "a", "aa"},
 			wantRets:   []bool{true, true, false},
+		},
+		"oneOrMore": {
+			givenExp:   "a+",
+			givenWords: []string{"", "a", "aa", "aaaaaaaaaaaaaa"},
+			wantRets:   []bool{false, true, true, true},
 		},
 		"concatenation of two chars": {
 			givenExp:   "ab",

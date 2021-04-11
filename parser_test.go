@@ -16,6 +16,7 @@ func TestInsertExplicitConcatOperator(t *testing.T) {
 		{"a*b|c", "a*.b|c"},
 		{"(a|b)*c", "(a|b)*.c"},
 		{"a?bc", "a?.b.c"},
+		{"a+bc", "a+.b.c"},
 	}
 
 	for i, c := range cases {
@@ -33,6 +34,7 @@ func TestToPostfix(t *testing.T) {
 	}{
 		{"a.b.c", "ab.c."},
 		{"a?.b.c", "a?b.c."},
+		{"a+.b.c", "a+b.c."},
 		{"(a|b).c", "ab|c."},
 		{"a*.b.c", "a*b.c."},
 		{"a*.(b|c).d", "a*bc|.d."},

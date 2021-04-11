@@ -1,5 +1,7 @@
 package regexgo
 
+import "regex-explained/token"
+
 // Thompson NFASearch Construction and Search
 
 type state struct {
@@ -53,40 +55,42 @@ func concat(first, second *nfa) *nfa {
 // unions two NFAs
 func union(first, second *nfa) *nfa {
 	start, end := createState(false), createState(true)
-
 	addEpsilonTransition(start, first.start)
 	addEpsilonTransition(start, second.start)
-
 	addEpsilonTransition(first.end, end)
 	addEpsilonTransition(second.end, end)
 	first.end.isEnd = false
 	second.end.isEnd = false
-
 	return &nfa{start, end}
 }
 
 // zeroOrMore represents zero or more times repetition
 func zeroOrMore(n *nfa) *nfa {
 	start, end := createState(false), createState(true)
-
 	addEpsilonTransition(start, end)
 	addEpsilonTransition(start, n.start)
-
 	addEpsilonTransition(n.end, end)
 	addEpsilonTransition(n.end, n.start)
 	n.end.isEnd = false
-
 	return &nfa{start, end}
 }
 
 // zeroOrOne represents zero or one times repetition
 func zeroOrOne(n *nfa) *nfa {
 	start, end := createState(false), createState(true)
-
 	addEpsilonTransition(start, end)
 	addEpsilonTransition(start, n.start)
 	addEpsilonTransition(n.end, end)
+	n.end.isEnd = false
+	return &nfa{start, end}
+}
 
+// OneOrMore represents one or more times repetition
+func oneOrMore(n *nfa) *nfa {
+	start, end := createState(false), createState(true)
+	addEpsilonTransition(start, n.start)
+	addEpsilonTransition(n.end, n.start)
+	addEpsilonTransition(n.end, end)
 	n.end.isEnd = false
 	return &nfa{start, end}
 }
@@ -108,15 +112,17 @@ func toNFA(postfixExp string) *nfa {
 
 		var next *nfa
 		switch tok {
-		case STAR:
+		case token.ZeroOrMore:
 			next = zeroOrMore(popStack())
-		case QM:
+		case token.ZeroOrOne:
 			next = zeroOrOne(popStack())
-		case OR:
+		case token.OneOrMore:
+			next = oneOrMore(popStack())
+		case token.OR:
 			right := popStack()
 			left := popStack()
 			next = union(left, right)
-		case CC:
+		case token.CC:
 			right := popStack()
 			left := popStack()
 			next = concat(left, right)
