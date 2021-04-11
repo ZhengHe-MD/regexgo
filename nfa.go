@@ -1,6 +1,6 @@
 package regexgo
 
-// Thompson NFA Construction and Search
+// Thompson NFASearch Construction and Search
 
 type state struct {
 	isEnd              bool
@@ -29,14 +29,14 @@ func addTransition(from, to *state, symbol byte) {
 	from.transition[symbol] = to
 }
 
-// Construct an NFA that recognizes only the empty string
+// Construct an NFASearch that recognizes only the empty string
 func fromEpsilon() *nfa {
 	start, end := createState(false), createState(true)
 	addEpsilonTransition(start, end)
 	return &nfa{start, end}
 }
 
-// Construct an NFA that recognizes only a single character string
+// Construct an NFASearch that recognizes only a single character string
 func fromSymbol(symbol byte) *nfa {
 	start, end := createState(false), createState(true)
 	addTransition(start, end, symbol)
@@ -65,7 +65,8 @@ func union(first, second *nfa) *nfa {
 	return &nfa{start, end}
 }
 
-func closure(n *nfa) *nfa {
+// zeroOrMore represents zero or more times repetition
+func zeroOrMore(n *nfa) *nfa {
 	start, end := createState(false), createState(true)
 
 	addEpsilonTransition(start, end)
@@ -75,6 +76,18 @@ func closure(n *nfa) *nfa {
 	addEpsilonTransition(n.end, n.start)
 	n.end.isEnd = false
 
+	return &nfa{start, end}
+}
+
+// zeroOrOne represents zero or one times repetition
+func zeroOrOne(n *nfa) *nfa {
+	start, end := createState(false), createState(true)
+
+	addEpsilonTransition(start, end)
+	addEpsilonTransition(start, n.start)
+	addEpsilonTransition(n.end, end)
+
+	n.end.isEnd = false
 	return &nfa{start, end}
 }
 
@@ -96,7 +109,9 @@ func toNFA(postfixExp string) *nfa {
 		var next *nfa
 		switch tok {
 		case STAR:
-			next = closure(popStack())
+			next = zeroOrMore(popStack())
+		case QM:
+			next = zeroOrOne(popStack())
 		case OR:
 			right := popStack()
 			left := popStack()
@@ -128,8 +143,8 @@ func addNextState(s *state, ns []*state, visited map[*state]interface{}) (ret []
 	return
 }
 
-// breadth-first search
-func bfs(n *nfa, word string) bool {
+// NFASearch search algorithm
+func nfaSearch(n *nfa, word string) bool {
 	var currStates []*state
 
 	currStates = append(currStates, addNextState(n.start, currStates, make(map[*state]interface{}))...)
@@ -157,8 +172,8 @@ func bfs(n *nfa, word string) bool {
 	return false
 }
 
-// depth-first search
-func dfs(s *state, visited map[*state]interface{}, exp string, pos int) bool {
+// Backtracking
+func backtracking(s *state, visited map[*state]interface{}, exp string, pos int) bool {
 	if _, ok := visited[s]; ok {
 		return false
 	}
@@ -171,7 +186,7 @@ func dfs(s *state, visited map[*state]interface{}, exp string, pos int) bool {
 		}
 
 		for _, t := range s.epsilonTransitions {
-			if dfs(t, visited, exp, pos) {
+			if backtracking(t, visited, exp, pos) {
 				return true
 			}
 		}
@@ -179,12 +194,12 @@ func dfs(s *state, visited map[*state]interface{}, exp string, pos int) bool {
 		ns := s.transition[exp[pos]]
 
 		if ns != nil {
-			if dfs(ns, make(map[*state]interface{}), exp, pos+1) {
+			if backtracking(ns, make(map[*state]interface{}), exp, pos+1) {
 				return true
 			}
 		} else {
 			for _, t := range s.epsilonTransitions {
-				if dfs(t, visited, exp, pos) {
+				if backtracking(t, visited, exp, pos) {
 					return true
 				}
 			}
@@ -194,8 +209,8 @@ func dfs(s *state, visited map[*state]interface{}, exp string, pos int) bool {
 }
 
 const (
-	DFS = iota
-	BFS
+	NFASearch = iota
+	Backtracking
 )
 
 type MatchOptions struct {
@@ -203,10 +218,10 @@ type MatchOptions struct {
 }
 
 func MatchString(n *nfa, word string, options *MatchOptions) bool {
-	if options.Method == DFS {
-		return dfs(n.start, make(map[*state]interface{}), word, 0)
+	if options.Method == Backtracking {
+		return backtracking(n.start, make(map[*state]interface{}), word, 0)
 	} else {
-		return bfs(n, word)
+		return nfaSearch(n, word)
 	}
 }
 

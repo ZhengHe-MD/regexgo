@@ -19,7 +19,7 @@ func insertExplicitConcatOperator(exp string) string {
 		if i < len(exp)-1 {
 			next := exp[i+1]
 
-			if next == STAR || next == RP || next == OR {
+			if next == OR || next == RP || next == STAR || next == QM {
 				continue
 			}
 
@@ -30,10 +30,13 @@ func insertExplicitConcatOperator(exp string) string {
 	return bs.String()
 }
 
+// NOTE: The operator precedence, from weakest to strongest binding, is
+// alternation -> concatenation -> repetition
 var precedence = map[byte]int{
 	OR:   0,
 	CC:   1,
 	STAR: 2,
+	QM:   3,
 }
 
 func toPostfix(exp string) string {
@@ -66,6 +69,8 @@ func toPostfix(exp string) string {
 		case OR:
 			takePrecedence(tok)
 		case STAR:
+			takePrecedence(tok)
+		case QM:
 			takePrecedence(tok)
 		case LP:
 			st = append(st, tok)
